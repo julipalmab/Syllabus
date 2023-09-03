@@ -14,16 +14,28 @@ from utilidades import (
 # ----------------------------------------------------------------------------
 # Parte 1: Cargar dataset
 # ----------------------------------------------------------------------------
+import csv
 
 def cargar_peliculas(ruta: str) -> Generator:
     # TODO: Completar
-    pass
+    separador = ","
+    with open(ruta, encoding="utf-8") as archivo:
+        next(archivo)  # Omitir encabezado del archivo
+        for linea in archivo:
+            linea = linea.rstrip("\n")  # Quitar salto de línea
+            columnas = linea.split(separador)
+            yield int(columnas[0]),str(columnas[1]),str(columnas[2]),int(columnas[3]),float(columnas[4])
 
 
 def cargar_generos(ruta: str) -> Generator:
     # TODO: Completar
-    pass
-
+    separador = ","
+    with open(ruta, encoding="utf-8") as archivo:
+        next(archivo)  # Omitir encabezado del archivo
+        for linea in archivo:
+            linea = linea.rstrip("\n")  # Quitar salto de línea
+            columnas = linea.split(separador)
+            yield (str(columnas[0]),int(columnas[1]))
 
 # ----------------------------------------------------------------------------
 # Parte 2: Consultas sobre generadores
@@ -31,13 +43,15 @@ def cargar_generos(ruta: str) -> Generator:
 
 def obtener_directores(generador_peliculas: Generator) -> set:
     # TODO: Completar
-    pass
-
+    mapeo = map(lambda x: x.director, generador_peliculas)
+    _set = obtener_unicos(mapeo)
+    return _set
 
 def obtener_str_titulos(generador_peliculas: Generator) -> str:
     # TODO: Completar
-    pass
-
+    mapeo = map(lambda x: x.titulo, generador_peliculas)
+    mapeo = ", ".join(mapeo)
+    return mapeo
 
 def filtrar_peliculas(
     generador_peliculas: Generator,
@@ -46,7 +60,13 @@ def filtrar_peliculas(
     rating_max: float | None = None
 ) -> filter:
     # TODO: Completar
-    pass
+    if director is not None:
+        generador_peliculas = filter(lambda x: x.director == director, generador_peliculas)
+    if rating_min is not None:
+        generador_peliculas = filter(lambda x: x.rating >= rating_min, generador_peliculas)
+    if rating_max is not None:
+        generador_peliculas = filter(lambda x: x.rating <= rating_max, generador_peliculas)
+    return generador_peliculas
 
 
 def filtrar_peliculas_por_genero(
@@ -55,7 +75,11 @@ def filtrar_peliculas_por_genero(
     genero: str | None = None
 ) -> Generator:
     # TODO: Completar
-    pass
+    producto = product(generador_peliculas, generador_generos)
+    mismo_id = filter(lambda p: p[0].id_pelicula == p[1].id_pelicula, producto)
+    if genero is not None:
+        mismo_id = filter(lambda p: p[1].genero == genero, mismo_id)
+    return mismo_id
 
 
 # ----------------------------------------------------------------------------
@@ -68,22 +92,38 @@ class DCCMax:
 
     def __iter__(self):
         # TODO: Completar
-        pass
+        return IteradorDCCMax(self.peliculas)
 
 
 class IteradorDCCMax:
     def __init__(self, iterable_peliculas: list) -> None:
         self.peliculas = copy(iterable_peliculas)
+        self.peliculas.sort(key = lambda pelicula: (pelicula.estreno, -pelicula.rating))
+        self.indices = 0 
+
+        '''
+        La idea de los índices fue sacada de:
+        https://tinchicus.com/2021/12/09/python-iterador-personalizado/
+        Y el sort(key = lambda) fue aprendido de:
+        https://sparkbyexamples.com/python/sort-using-lambda-in-python/
+        y 
+        https://blogboard.io/blog/knowledge/python-sorted-lambda/
+        
+        '''
 
     def __iter__(self):
         # TODO: Completar
-        pass
+        return self
 
     def __next__(self) -> tuple:
         # TODO: Completar
-
-        # Se levanta la excepción correspondiente
-        raise StopIteration()
+        if self.indices < len(self.peliculas):
+            valor = self.peliculas[self.indices]
+            self.indices += 1
+            return valor
+        else:
+            # Se levanta la excepción correspondiente
+            raise StopIteration()
 
 
 if __name__ == '__main__':
