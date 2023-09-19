@@ -33,7 +33,7 @@ class Jugador(Thread):
     ) -> None:
         super().__init__(name=nombre)
         # Completar
-        self.daemon = "COMPLETAR"
+        self.daemon = True
 
         # No modificar el resto de los atributos
         self.bandera = bandera
@@ -76,11 +76,16 @@ class Jugador(Thread):
 
     def perder_bandera(self) -> None:
         # Completar
-        print(f"{self.name}: Perdí la bandera :(")
+        if self.tiene_bandera == True:
+            self.tiene_bandera = False
+            print(f"{self.name}: Perdí la bandera :(")
 
     def capturar_bandera(self) -> None:
         # Completar
-        pass
+        for rival in self.rivales:
+            self.perder_bandera(rival)
+        bandera.actualizar_dueño(self.name)
+        self.tiene_bandera = True
 
     def intentar_capturar_bandera(self) -> None:
         # Completar
